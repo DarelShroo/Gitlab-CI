@@ -1,4 +1,4 @@
-# GitLab CI Configuration File: .gitlab-ci.yml
+# GitLab CI Configuration File: .gitlab-ci.md
 #
 # Configura el pipeline para ejecutar jobs en diferentes etapas.
 # Se incluyen configuraciones para variables, imágenes de contenedor, reglas y scripts de ejecución.
