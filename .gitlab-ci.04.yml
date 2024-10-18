@@ -1,0 +1,57 @@
+# Especificación de la configuración para los inputs que se pueden usar en el pipeline.
+---
+spec:
+  inputs:
+    environment:
+      # Descripción del parámetro "environment". Indica el entorno de despliegue: puede ser "development", "staging" o "production".
+      description: 'Define the environment for the pipeline. Can be "development", "staging", or "production".'
+      # Opciones posibles para el entorno.
+      options:
+        - development  # Entorno de desarrollo.
+        - staging      # Entorno de pruebas o preproducción.
+        - production   # Entorno de producción.
+      # Valor por defecto del entorno si no se especifica.
+      default: 'development'
+
+    version:
+      # Descripción del parámetro "version". Define el formato de la versión que debe seguir el patrón: v<major>.<minor>.<patch>.
+      description: 'Version format must follow the pattern: v<major>.<minor>.<patch>'
+      # Expresión regular para validar que la versión siga el formato adecuado.
+      regex: ^v\d\.\d+(\.\d+)?$  # El formato correcto es algo como v1.0 o v1.0.0.
+
+    job_stage:
+      # Descripción del parámetro "job_stage". Permite definir en qué etapa del pipeline estamos, como "build" o "deploy".
+      description: 'Define the stage for the pipeline. Example: "build" or "deploy".'
+---
+
+# Definición de las etapas del pipeline.
+stages:
+  - build    # Primera etapa del pipeline: "build", donde se compila o construye el proyecto.
+  - deploy   # Segunda etapa: "deploy", donde se despliega el proyecto.
+
+########## job_build ##########
+job_build:
+  stage: build  # Este job pertenece a la etapa "build".
+  script:
+    # Utiliza el valor de "environment" definido en los inputs. Se imprime el entorno actual.
+    - echo 'Building in the environment $[[ inputs.environment ]]'
+    # Simulamos un error con código de salida 137.
+    - exit 137
+  allow_failure:
+    # Este bloque permite que el job continúe a pesar de que falle si el código de salida es 137 o 255.
+    exit_codes:
+      - 137  # Si el job termina con este código de salida, el pipeline lo considerará permitido.
+      - 255  # También se permite el fallo si el código de salida es 255.
+
+########## job_deploy ##########
+job_deploy:
+  stage: deploy  # Este job pertenece a la etapa "deploy".
+  script:
+    # Utiliza el valor de "job_stage" definido en los inputs. Se imprime la etapa en la que se está desplegando.
+    - echo 'Deploying to the stage $[[ inputs.job_stage ]]'
+
+  # El bloque after_script se ejecuta al final del job, independientemente de su resultado.
+  after_script:
+    # Este script se ejecuta en una shell separada y tiene un tiempo máximo de ejecución de 5 minutos,
+    # que se puede configurar con la variable RUNNER_AFTER_SCRIPT_TIMEOUT.
+    - echo 'This script runs in a separate shell with a maximum of 5 minutes configurable with the variable RUNNER_AFTER_SCRIPT_TIMEOUT.'

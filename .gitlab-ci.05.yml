@@ -1,0 +1,23 @@
+# Definición de las etapas del pipeline.
+# En este caso, solo hay una etapa: build.
+stages:
+  - build  # Etapa de construcción donde se compila o prepara el proyecto.
+
+########## job_build ##########
+# `job_build`: Este es el único job definido en la etapa `build`.
+job_build:
+  stage: build  # Este job pertenece a la etapa "build".
+  script:
+    # El script principal que se ejecuta durante la fase de "build".
+    # El primer comando imprime un mensaje indicando que se está construyendo el proyecto.
+    - echo 'Building project...'
+
+    # A propósito, se fuerza la finalización del script con un código de error (exit 1), lo que provoca que el job falle.
+    - exit 1  # Este código indica un fallo intencional en el job.
+
+  # `after_script`: Esta sección define comandos que se ejecutan siempre después de que termine el `script`.
+  # Esto se ejecuta independientemente de si el `script` falló o fue exitoso.
+  after_script:
+    # El script de limpieza que se ejecuta después del `script` principal.
+    # Aquí se imprime un mensaje, pero en un entorno real podrías usarlo para limpiar archivos temporales u otras acciones.
+    - echo 'Cleaning up...'  # Este script de limpieza se ejecuta después de la construcción fallida o exitosa.
