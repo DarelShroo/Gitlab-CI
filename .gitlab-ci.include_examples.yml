@@ -1,0 +1,59 @@
+# GitLab CI Configuration File: .gitlab-ci.yml
+#
+# Este archivo define un pipeline en GitLab CI/CD. Configura etapas, jobs y define variables.
+# Cada sección está documentada y enlazada a la documentación oficial de GitLab para mayor referencia.
+
+########## include ##########
+# `include`: Incluir configuraciones desde archivos externos, que pueden ser remotos, de otro proyecto, o locales.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#include
+include:
+  - remote: 'https://example.com/.gitlab-ci.yml'  # Incluir un archivo desde una URL remota.
+  - project: '/example/folder'  # Incluir un archivo desde otro proyecto en GitLab.
+    ref: main  # Rama del proyecto de donde se extrae el archivo.
+    file: '/example.yml'  # Ruta del archivo en el proyecto.
+  - local: 'file.yml'  # Incluir un archivo local dentro del mismo repositorio.
+
+########## variables ##########
+# `variables`: Definir variables globales disponibles para todos los jobs.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#variables
+variables:
+  ENVIRONMENT: 'production'  # Variable global que define el entorno de despliegue (por defecto 'production').
+
+########## stages ##########
+# `stages`: Define el orden en que se ejecutan las etapas en el pipeline.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#stages
+stages:
+  - test    # Primera etapa: pruebas.
+  - build   # Segunda etapa: construcción.
+  - deploy  # Tercera etapa: despliegue.
+
+########## default ##########
+# `default`: Establece valores por defecto aplicados a todos los jobs, a menos que sean sobrescritos en un job específico.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#default
+default:
+  image: python:3.9  # Imagen Docker por defecto para los jobs (Python 3.9).
+  retry: 2           # Intentos automáticos en caso de fallos (máximo 2 reintentos).
+
+########## job_a ##########
+# `job_a`: Job que se ejecuta en la etapa `test` y hereda los valores por defecto.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#job-configuration
+job_a:
+  stage: test  # Especifica la etapa en la que se ejecuta este job.
+  variables:
+    BRANCH: "develop"  # Variable local al job, específica para definir la rama 'develop'.
+  script:
+    - echo 'Hereda default: usa Python 3.9 y retry 2'  # Mensaje indicando los valores heredados.
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "$BRANCH"'  # Ejecuta solo si la rama es 'develop'.
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event"'  # Ejecuta solo si no es un evento de merge request.
+  # Más info sobre rules: https://docs.gitlab.com/ee/ci/yaml/#rules
+
+########## job_b ##########
+# `job_b`: Job que se ejecuta en la etapa `build` y sobrescribe la imagen por defecto.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#job-configuration
+job_b:
+  stage: build  # Etapa en la que se ejecuta este job.
+  image: node:14  # Sobrescribe la imagen Docker por defecto y usa Node.js 14.
+  script:
+    - echo "Usa Node.js 14 pero hereda retry 2"  # Mensaje sobre la imagen específica y los reintentos heredados.
+    - echo "Building in $ENVIRONMENT environment"  # Mensaje indicando el entorno de despliegue ('production').

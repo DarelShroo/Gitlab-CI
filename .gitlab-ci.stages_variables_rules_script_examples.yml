@@ -1,0 +1,58 @@
+########## GitLab CI Configuration File: .gitlab-ci.yml ##########
+#
+# Este archivo configura un pipeline de GitLab CI/CD con diferentes etapas (stages) y variables globales.
+# Más información sobre la configuración de CI/CD en GitLab:
+# https://docs.gitlab.com/ee/ci/yaml/
+
+########## Definición de etapas del pipeline ##########
+# `stages`: Define las diferentes etapas (fases) del pipeline, que se ejecutan en el orden indicado.
+# https://docs.gitlab.com/ee/ci/yaml/#stages
+stages:
+  - .pre    # Etapa opcional previa al build (generalmente para validaciones previas).
+  - build   # Etapa de construcción, utilizada para compilar o crear artefactos.
+  - test    # Etapa de pruebas, donde se validan las funcionalidades o el código.
+  - deploy  # Etapa de despliegue, donde se implementa el proyecto (en producción o staging).
+  - .post   # Etapa opcional posterior (generalmente para limpieza o notificaciones).
+
+########## Variables globales ##########
+# `variables`: Define variables globales que estarán disponibles en todos los jobs del pipeline.
+# https://docs.gitlab.com/ee/ci/yaml/#variables
+variables:
+  ENVIRONMENT: 'production'  # Variable global que define el entorno de despliegue (por defecto, 'production').
+
+########## job_build ##########
+# `job_build`: Este job se ejecuta en la etapa `build` para realizar tareas de construcción.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#job-configuration
+job_build:
+  stage: build  # Este job pertenece a la etapa "build".
+  script:
+    # `script`: Imprime el valor de la variable `ENVIRONMENT`, que en este caso es 'production'.
+    - echo $ENVIRONMENT  # Muestra el entorno de despliegue (por defecto, 'production').
+
+########## job_test ##########
+# `job_test`: Este job se ejecuta en la etapa `test` para realizar pruebas. Solo se ejecuta en la rama `develop`.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#rules
+job_test:
+  stage: test  # Este job pertenece a la etapa "test".
+  script:
+    # `script`: Imprime el valor de la variable `ENVIRONMENT` durante las pruebas.
+    - echo $ENVIRONMENT  # Muestra el entorno de despliegue.
+  rules:
+    # `rules`: Define cuándo se debe ejecutar este job. En este caso, solo se ejecuta si la rama es `develop`.
+    # https://docs.gitlab.com/ee/ci/yaml/#rules
+    - if: '$CI_COMMIT_BRANCH == "develop"'  # Ejecuta este job solo si la rama del commit es `develop`.
+
+########## job_deploy ##########
+# `job_deploy`: Este job se ejecuta en la etapa `deploy` y sobrescribe la variable `ENVIRONMENT` a `staging`.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#variables
+job_deploy:
+  stage: deploy  # Este job pertenece a la etapa "deploy".
+  variables:
+    # `variables`: Sobrescribe la variable `ENVIRONMENT` a nivel de job (se establece como 'staging' en lugar de 'production').
+    ENVIRONMENT: 'staging'  # Define el entorno como 'staging' solo para este job.
+  script:
+    # `script`: Imprime el valor de `ENVIRONMENT`, que en este caso es 'staging'.
+    - echo $ENVIRONMENT  # Muestra el entorno de despliegue como 'staging'.
+  rules:
+    # `rules`: Define cuándo se ejecuta este job. Solo se ejecuta en la rama `main` y si no es un evento de merge request.
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE != "merge_request_event"'  # Ejecuta si la rama es `main` y no es un merge request.

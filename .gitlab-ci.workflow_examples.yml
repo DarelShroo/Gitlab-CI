@@ -1,0 +1,63 @@
+########## Configuración global del pipeline ##########
+# Este bloque configura el comportamiento global del pipeline en GitLab CI/CD.
+# Incluye opciones para el auto-cancelado de pipelines y reglas para determinar si se debe ejecutar el pipeline.
+# Más información sobre la configuración de workflow en GitLab:
+# https://docs.gitlab.com/ee/ci/yaml/#workflow
+workflow:
+  auto_cancel:
+    on_job_failure: none  # No se cancelan las pipelines en caso de fallos de jobs anteriores.
+    # Cuando se hace un nuevo commit, si la pipeline anterior está corriendo, esta se interrumpe.
+    on_new_commit: interruptible  # Solo se ejecuta la versión más reciente del pipeline.
+
+  # `rules`: Define las condiciones bajo las cuales se ejecuta el pipeline.
+  # https://docs.gitlab.com/ee/ci/yaml/#rules
+  rules:
+    # Si la rama actual es "main", se asigna el nombre "Main pipeline" a la pipeline.
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+      variables:
+        PIPELINE_NAME: "Main pipeline"  # Nombre para la pipeline principal.
+
+    # Si la rama es una feature branch (que comienza con "feature/"), se asigna "Feature pipeline".
+    - if: '$CI_COMMIT_REF_NAME =~ /^feature\//'
+      variables:
+        PIPELINE_NAME: "Feature pipeline"  # Nombre para las pipelines de las ramas de features.
+
+    # Si ninguna de las condiciones anteriores se cumple, la pipeline no se ejecuta.
+    - when: never  # Esta regla asegura que el pipeline solo se ejecute en la rama main o en feature branches.
+
+########## Definición de etapas del pipeline ##########
+# `stages`: Define las etapas del pipeline. Cada job debe asignarse a una de estas etapas.
+# https://docs.gitlab.com/ee/ci/yaml/#stages
+stages:
+  - build    # Primera etapa: build (compilación o construcción).
+  - test     # Segunda etapa: test.
+  - deploy   # Tercera etapa: deploy (despliegue).
+
+########## job_build ##########
+# `job_build`: Este job se ejecuta en la etapa `build` para realizar tareas de construcción.
+# Más información: https://docs.gitlab.com/ee/ci/yaml/#job-configuration
+job_build:
+  stage: build  # Este job pertenece a la etapa "build".
+  script:
+    # `script`: Imprime un mensaje indicando que se está construyendo el proyecto.
+    - echo 'Building the project...'  # Aquí podrías compilar o construir tu proyecto.
+
+########## job_test ##########
+# `job_test`: Este job se ejecuta en la etapa `test` para realizar pruebas.
+# Más información: https://docs.gitlab.com/ee/ci/yaml/#job-configuration
+job_test:
+  stage: test  # Este job pertenece a la etapa "test".
+  script:
+    # `script`: Imprime un saludo como parte de las pruebas.
+    - echo 'hola'  # Normalmente aquí ejecutarías tus pruebas automáticas.
+
+########## job_deploy ##########
+# `job_deploy`: Este job se ejecuta en la etapa `deploy` para desplegar el proyecto.
+# Más información: https://docs.gitlab.com/ee/ci/yaml/#job-configuration
+job_deploy:
+  stage: deploy  # Este job pertenece a la etapa "deploy".
+  # Este job es interruptible, lo que significa que puede ser cancelado si se inicia una nueva pipeline.
+  interruptible: true  # Permite que este job sea cancelado si llega un nuevo commit.
+  script:
+    # `script`: Imprime un mensaje indicando que se está desplegando a producción.
+    - echo 'Deploying to production...'  # Aquí pondrías los comandos necesarios para desplegar tu aplicación.

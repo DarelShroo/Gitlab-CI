@@ -1,0 +1,26 @@
+########## stages ##########
+# `stages`: Define las etapas del pipeline. En este caso, solo se ha definido la etapa `build`.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#stages
+stages:
+  - build  # Etapa de construcción donde se compila o prepara el proyecto.
+
+########## job_build ##########
+# `job_build`: Un único job que se ejecuta en la etapa `build`.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#jobs
+job_build:
+  stage: build  # Define que este job se ejecuta en la etapa `build`.
+
+  # `script`: Contiene los comandos que se ejecutarán durante la etapa de construcción.
+  # Más info: https://docs.gitlab.com/ee/ci/yaml/#script
+  script:
+    - echo 'Building project...'  # Mensaje indicativo de que el proceso de construcción ha comenzado.
+
+    # Intencionalmente se fuerza la finalización del script con un código de error (exit 1), lo que provoca que el job falle.
+    - exit 1  # El código de salida '1' indica un fallo intencionado en el job.
+
+  ########## after_script ##########
+  # `after_script`: Comandos que se ejecutan después de que termine el `script`, sin importar si fue exitoso o falló.
+  # Se usa comúnmente para tareas de limpieza o cierre de recursos.
+  # Más info: https://docs.gitlab.com/ee/ci/yaml/#after_script
+  after_script:
+    - echo 'Cleaning up...'  # Mensaje indicando que se está ejecutando un proceso de limpieza post-job.

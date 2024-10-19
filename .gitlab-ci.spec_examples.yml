@@ -1,0 +1,66 @@
+########## Especificación de configuración de inputs ##########
+# `spec`: Define los inputs que se pueden utilizar en el pipeline.
+# Estos valores se especifican para personalizar el comportamiento de los jobs según el entorno, la versión o la etapa del pipeline.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#spec
+---
+spec:
+  inputs:
+    environment:
+      # Descripción del parámetro "environment": Define el entorno de despliegue.
+      # Las opciones posibles son "development", "staging" o "production".
+      description: 'Define the environment for the pipeline. Can be "development", "staging", or "production".'
+      options:
+        - development  # Entorno de desarrollo.
+        - staging      # Entorno de pruebas (staging).
+        - production   # Entorno de producción.
+      default: 'development'  # Valor por defecto del entorno si no se especifica.
+
+    version:
+      # Descripción del parámetro "version": Define el formato de la versión.
+      # La versión debe seguir el patrón `v<major>.<minor>.<patch>`.
+      description: 'Version format must follow the pattern: v<major>.<minor>.<patch>.'
+      # Expresión regular que valida que la versión siga el formato correcto.
+      regex: ^v\d\.\d+(\.\d+)?$  # Acepta versiones como v1.0 o v1.0.0.
+
+    job_stage:
+      # Descripción del parámetro "job_stage": Define en qué etapa del pipeline se ejecuta el job, como "build" o "deploy".
+      description: 'Define the stage for the pipeline. Example: "build" or "deploy".'
+
+########## Definición de etapas del pipeline ##########
+# `stages`: Define las etapas principales del pipeline, que se ejecutan en el orden indicado.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#stages
+stages:
+  - build    # Primera etapa: "build", para compilar o construir el proyecto.
+  - deploy   # Segunda etapa: "deploy", para desplegar el proyecto.
+
+########## job_build ##########
+# `job_build`: Este job se ejecuta en la etapa `build`. Usa el input `environment` y maneja errores específicos.
+job_build:
+  stage: build  # Define que este job pertenece a la etapa "build".
+  script:
+    # `script`: Imprime el entorno seleccionado mediante el input "environment" y simula un error con el código de salida 137.
+    # Más info: https://docs.gitlab.com/ee/ci/yaml/#script
+    - echo 'Building in the environment $[[ inputs.environment ]]'  # Muestra el entorno actual de compilación.
+    - exit 137  # Simula un fallo con código de salida 137.
+
+  # `allow_failure`: Permite que el pipeline continúe si el job falla con los códigos de salida especificados (137 o 255).
+  # Más info: https://docs.gitlab.com/ee/ci/yaml/#allow_failure
+  allow_failure:
+    exit_codes:
+      - 137  # Se permite el fallo si el código de salida es 137.
+      - 255  # También se permite el fallo si el código de salida es 255.
+
+########## job_deploy ##########
+# `job_deploy`: Este job se ejecuta en la etapa `deploy`. Usa el input `job_stage` y tiene un `after_script` personalizado.
+job_deploy:
+  stage: deploy  # Define que este job pertenece a la etapa "deploy".
+  script:
+    # `script`: Imprime la etapa de despliegue según el input "job_stage".
+    - echo 'Deploying to the stage $[[ inputs.job_stage ]]'  # Muestra la etapa en la que se despliega.
+
+  # `after_script`: Este bloque se ejecuta al final del job, independientemente de su éxito o fallo.
+  # Más info: https://docs.gitlab.com/ee/ci/yaml/#after_script
+  after_script:
+    # Este script se ejecuta en una shell separada con un tiempo máximo de ejecución de 5 minutos.
+    # El tiempo límite puede configurarse con la variable `RUNNER_AFTER_SCRIPT_TIMEOUT`.
+    - echo 'This script runs in a separate shell with a maximum of 5 minutes configurable with the variable RUNNER_AFTER_SCRIPT_TIMEOUT.'  # Mensaje indicando que el after_script se ejecuta en una shell separada.

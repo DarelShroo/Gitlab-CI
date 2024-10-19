@@ -1,0 +1,97 @@
+########## job_exclude ##########
+# `job_exclude`: Este job crea un directorio y varios archivos, pero excluye los archivos temporales en los artefactos.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#artifacts
+job_exclude:
+  stage: build  # Este job se ejecuta en la etapa `build`.
+
+  # `script`: Comandos que crean un directorio de binarios y generan algunos archivos.
+  # Más info: https://docs.gitlab.com/ee/ci/yaml/#script
+  script:
+    - mkdir binaries  # Crea el directorio 'binaries'.
+    - echo "Compilando código..." > binaries/programa.bin  # Crea un archivo de binario en el directorio.
+    - echo "Generando logs..." > build.log  # Genera un archivo de log.
+    - echo "Archivo temporal..." > temp.tmp  # Genera un archivo temporal.
+
+  # `artifacts`: Especifica qué archivos se deben almacenar después de que el job termine, pero excluye archivos temporales.
+  # Más info: https://docs.gitlab.com/ee/ci/yaml/#artifacts
+  artifacts:
+    paths:
+      - binaries/  # Guarda todo el contenido del directorio 'binaries' como artefacto.
+    exclude:
+      - '*.temp'  # Excluye archivos con la extensión '.temp'.
+
+########## job_expires ##########
+# `job_expires`: Este job compila código y almacena un archivo como artefacto, pero con una fecha de expiración.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#artifacts
+job_expires:
+  stage: build  # Este job se ejecuta en la etapa `build`.
+
+  script:
+    - echo "Compilando código..." > output.txt  # Compila el código y lo guarda en 'output.txt'.
+
+  # `artifacts`: El archivo generado se almacena como artefacto, pero se elimina automáticamente después de 2 días.
+  artifacts:
+    paths:
+      - output.txt  # Almacena 'output.txt' como artefacto.
+    expire_in: 2 days  # El artefacto expirará después de 2 días.
+
+########## job_ui ##########
+# `job_ui`: Este job genera un archivo de resultados de prueba y lo expone como un artefacto visible en la interfaz de GitLab.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#artifacts
+job_ui:
+  stage: build  # Este job se ejecuta en la etapa `build`.
+
+  script:
+    - echo 'Test realizado' > resultado.txt  # Guarda el resultado del test en 'resultado.txt'.
+
+  # `artifacts`: Exposición del artefacto en la interfaz de usuario de GitLab.
+  artifacts:
+    expose_as: 'Resultados de la Prueba'  # Nombre que se muestra en la UI de GitLab.
+    paths:
+      - resultado.txt  # Almacena 'resultado.txt' como artefacto.
+
+########## job_name ##########
+# `job_name`: Este job genera resultados de prueba y asigna un nombre personalizado al artefacto.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#artifacts
+job_name:
+  stage: build  # Este job se ejecuta en la etapa `build`.
+
+  script:
+    - echo 'Tests realizado' > tests.txt  # Guarda los resultados del test en 'tests.txt'.
+
+  # `artifacts`: Asigna un nombre personalizado al artefacto.
+  artifacts:
+    name: 'Tests-e2e'  # Nombre personalizado del artefacto.
+    paths:
+      - tests.txt  # Almacena 'tests.txt' como artefacto.
+
+########## job_limited_access ##########
+# `job_limited_access`: Genera resultados de prueba pero restringe el acceso a los artefactos solo a desarrolladores.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#artifacts
+job_limited_access:
+  stage: build  # Este job se ejecuta en la etapa `build`.
+
+  script:
+    - echo 'Tests realizado' > tests.txt  # Guarda los resultados del test en 'tests.txt'.
+
+  # `artifacts`: Restringe el acceso a los artefactos solo a usuarios con permisos de desarrollador.
+  artifacts:
+    access: developers  # Solo los desarrolladores pueden acceder a este artefacto.
+    paths:
+      - tests.txt  # Almacena 'tests.txt' como artefacto.
+
+########## job_untracked ##########
+# `job_untracked`: Este job genera un archivo de error y lo almacena como artefacto solo si el job falla.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#artifacts
+job_untracked:
+  stage: build  # Este job se ejecuta en la etapa `build`.
+
+  script:
+    - echo 'Tests realizado' > error.txt  # Guarda un archivo de error en 'error.txt'.
+
+  # `artifacts`: Almacena los archivos no rastreados solo en caso de fallo del job.
+  artifacts:
+    untracked: true  # Incluir archivos no rastreados como artefactos.
+    when: on_failure  # Almacena los artefactos solo si el job falla.
+    paths:
+      - error.txt  # Almacena 'error.txt' como artefacto.

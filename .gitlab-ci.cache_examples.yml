@@ -1,0 +1,47 @@
+########## job_configure_environment ##########
+# `job_configure_environment`: Este job instala dependencias antes de ejecutar el script principal.
+# Usa `before_script` para instalar 'curl' y luego realiza una solicitud HTTP.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#before_script
+job_configure_environment:
+  before_script:
+    # `before_script`: Se ejecuta antes del script principal. En este caso, actualiza los repositorios e instala 'curl'.
+    # Es útil para preparar el entorno del job.
+    - apt-get update && apt-get install -y curl  # Actualiza repositorios e instala 'curl'.
+
+  script:
+    # `script`: Hace una solicitud HTTP utilizando 'curl' después de que se ha configurado el entorno.
+    # Más info: https://docs.gitlab.com/ee/ci/yaml/#script
+    - curl http://example.com/  # Realiza una solicitud GET a una URL externa.
+
+########## job_configure_cache ##########
+# `job_configure_cache`: Este job instala dependencias usando npm y configura la caché para las dependencias de Node.js.
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#cache
+job_configure_cache:
+  script:
+    # `script`: Ejecuta `npm install` para instalar las dependencias de Node.js.
+    - npm install  # Instala dependencias de Node.js a partir de `package.json`.
+
+  # `cache`: Configura la caché para almacenar el directorio `node_modules` y reutilizarlo en otros pipelines.
+  # El `key` utiliza la rama actual del commit (`$CI_COMMIT_REF_SLUG`) para generar una clave única.
+  # Más info: https://docs.gitlab.com/ee/ci/yaml/#cache
+  cache:
+    key: deps-$CI_COMMIT_REF_SLUG  # Clave de caché basada en la rama del commit.
+    paths:
+      - node_modules/  # Almacena el directorio `node_modules` en caché.
+
+########## job_advanced_cache_key ##########
+# `job_advanced_cache_key`: Utiliza una clave de caché avanzada basada en un archivo específico (`package.json`).
+# Más info: https://docs.gitlab.com/ee/ci/yaml/#cache
+job_advanced_cache_key:
+  script:
+    # `script`: Este script solo muestra un mensaje sobre el uso de la caché basada en archivos clave.
+    - echo "Usando caché basada en archivos clave"  # Mensaje indicando el uso de la caché avanzada.
+
+  # `cache`: Configura una caché avanzada donde la clave está basada en el archivo `package.json`.
+  # Esto asegura que la caché solo se reutilice si el archivo `package.json` no ha cambiado.
+  cache:
+    key:
+      files:
+        - package.json  # Clave basada en el contenido del archivo `package.json`.
+    paths:
+      - node_modules/  # Almacena el directorio `node_modules` en caché.
