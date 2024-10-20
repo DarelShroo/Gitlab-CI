@@ -1,5 +1,5 @@
-# GitLab CI/CD Examples & Exercises
+# Ejemplos y Ejercicios de GitLab CI/CD
 
-This repository contains all the examples and exercises I've completed while learning GitLab CI/CD. My goal is to share my knowledge and help others who are also interested in automating their workflows with GitLab. Feel free to explore, use, and contribute!
+Este repositorio contiene todos los ejemplos y ejercicios que he completado mientras aprendía GitLab CI/CD. Mi objetivo es compartir mi conocimiento y ayudar a otros que también están interesados en automatizar sus flujos de trabajo con GitLab. ¡Siéntete libre de explorar, usar y contribuir!
 
-Let's build better pipelines together! 🚀
+¡Vamos a construir mejores pipelines juntos! 🚀
